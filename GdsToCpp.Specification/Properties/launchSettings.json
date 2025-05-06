@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "GdsToCpp.Specification": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:60436;http://localhost:60437"
+    }
+  }
+}
