@@ -28,30 +28,42 @@ var bullet = preload("res://scenes/player/bullets/bullet.tscn")
 
 var map:PackedScene	
 
-func save_map():
-	map = PackedScene.new()
-	map.pack(get_parent())
-	ResourceSaver.save(map,"user://Checkpoint.tscn")
+void save_map()
+{
+	map = PackedScene.new();
+	map.pack(get_parent());
+	ResourceSaver.save(map, "user://Checkpoint.tscn");
+}
 
-func load():
-	var scene = ResourceLoader.load("user://Checkpoint.tscn")
-	get_tree().change_scene_to_packed(scene)
+void load()
+{
+	var scene = ResourceLoader.load("user://Checkpoint.tscn");
+	get_tree()->change_scene_to_packed(scene);
+}
 
-func shake_camera_random(rangeX, rangeY):
-	// cam.offset.x = randf_range(-rangeX,rangeX)
-	// cam.offset.y = randf_range(-rangeY,rangeY)
-	camera_shake.apply_noise_shake(randf_range(-rangeX,rangeX),randf_range(-rangeY,rangeY))
-	// $shake_cam.start()
-	
-func shake_camera_back(rangeX, rangeY):
-	camera_shake.apply_noise_shake(randf_range(-rangeX,rangeX),randf_range(-rangeY,rangeY))
-	// cam.offset.x = rangeX
-	// cam.offset.y = rangeY
-	// $shake_cam.start()
+void shake_camera_random(rangeX, rangeY)
+{
+	// cam.offset.x = randf_range(-rangeX, rangeX);
+	// cam.offset.y = randf_range(-rangeY, rangeY);
+	camera_shake.apply_noise_shake(randf_range(-rangeX, rangeX), randf_range(-rangeY, rangeY));
+	// $shake_cam.start();
+}
 
-func _on_shake_cam_timeout() -> void:
-	cam.offset.x = 0
-	cam.offset.y = 0
-	
-func is_on_platform():
-	return $RayCast2D.is_colliding() or $RayCast2D2.is_colliding()
+void shake_camera_back(rangeX, rangeY)
+{
+	camera_shake.apply_noise_shake(randf_range(-rangeX, rangeX), randf_range(-rangeY, rangeY))
+	// cam.offset.x = rangeX;
+	// cam.offset.y = rangeY;
+	// $shake_cam.start();
+}
+
+void _on_shake_cam_timeout()
+{
+	cam.offset.x = 0;
+	cam.offset.y = 0;
+}
+
+void is_on_platform()
+{
+	return $RayCast2D.is_colliding() or $RayCast2D2.is_colliding();
+}
