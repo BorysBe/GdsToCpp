@@ -23,14 +23,14 @@ namespace GdsToJenovaCpp.Specification.Controllers
         }
 
         [Fact]
-        public async Task Should_replace_gds_methods_with_cpp_comments()
+        public async Task Should_replace_gds_methods_with_c_style_methods()
         {
             // Arrange
             var gds = "func shake_camera_random(rangeX, rangeY):\r\n\tcamera_shake.apply_noise_shake(randf_range(-rangeX,rangeX),randf_range(-rangeY,rangeY))\r\n\r\n";
             var builder = new GdsToJenovaCppBuilder(gds);
 
             // Act
-            builder.TranslateMethods();
+            builder.ReplaceMethods();
             var result = builder.Build();
 
             // Assert
