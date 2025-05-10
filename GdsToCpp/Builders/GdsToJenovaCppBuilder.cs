@@ -26,19 +26,24 @@ namespace GdsToJenovaCpp.Builders
         public GdsToJenovaCppBuilder ReplaceMethods()
         {
             _code.Replace("func ", "void ");
+            _code.Replace("{", "ESCLBracket");
+            _code.Replace(":=", "=");
             ReplaceMethodHeaderForVoid();
             ReplaceBrackets();
+            _code.Replace("ESCLBracket", "{");
             return this;
         }
 
         private void ReplaceBrackets()
         {
-            _code = new StringBuilder(Regex.Replace(_code.ToString(), @"(\w+)\.(\w+)", "$1->$2"));
-            string[] lines = _code.ToString().Split("\r\n");
+            _code = new StringBuilder(Regex.Replace(_code.ToString(), @"(?<!\d)\.(\w+)", "->$1"));
+            _code.Replace("->tscn", ".tscn");
+            List<string> lines = _code.ToString().Split("\r\n", StringSplitOptions.None).ToList();
+            lines.Add("\r\n");
             var linesCount = lines.Count();
             bool openBracketSpotted = false;
             bool closedBracketSpotted = false;
-            for (var idx = 0; idx < linesCount - 1; idx++)
+            for (var idx = 0; idx < linesCount; idx++)
             {
                 if (lines[idx].Contains("{"))
                     openBracketSpotted = true;
@@ -52,12 +57,19 @@ namespace GdsToJenovaCpp.Builders
                 {
                     lines[idx] = "}\r\n";
                 }
+                else
+                    if (openBracketSpotted && lines[idx] != "" && !lines[idx].Contains("void"))
+                    {
+                        lines[idx] = lines[idx] + ";";
+                    }
             }
             var codeAgain = string.Empty;
             for (var idx = 1; idx < linesCount - 1; idx++)
             {
                 codeAgain += lines[idx] + "\r\n";
             }
+            codeAgain = codeAgain.Replace("{;", "{");
+            codeAgain = codeAgain.Replace("\t;", "}\r\n");
             _code = new StringBuilder(codeAgain);
         }
 
