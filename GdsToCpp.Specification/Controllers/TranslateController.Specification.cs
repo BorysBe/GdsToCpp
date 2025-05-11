@@ -11,7 +11,7 @@ namespace GdsToJenovaCpp.Specification.Controllers
         {
             // Arrange
             var controller = new TranslateController();
-            var gdscriptPath = "script.gd";
+            var gdscriptPath = @"GDScriptSamples\script.gd";
             var gdscript = await File.ReadAllTextAsync(gdscriptPath);
 
             // Act

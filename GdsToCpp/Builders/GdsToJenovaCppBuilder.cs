@@ -30,8 +30,39 @@ namespace GdsToJenovaCpp.Builders
             _code.Replace(":=", "=");
             ReplaceMethodHeaderForVoid();
             ReplaceBrackets();
+            ReverseParametersOrderInFunctionDeclarationBrackets();
             _code.Replace(Expressions.ParserInterLang.LeftCppBracketEscaped, Expressions.Jenova.LeftBracket);
             return this;
+        }
+
+        /// <summary>
+        /// Replacing GDScript format
+        /// "(area: Area2D, area2: Area2D)" into "(Area2D area, Area2D area2)"
+        /// </summary>
+        private void ReverseParametersOrderInFunctionDeclarationBrackets()
+        {
+            var input = _code.ToString();
+            string pattern = @"\(([^)]*)\)";
+            string replaced = Regex.Replace(input, pattern, match =>
+            {
+                string innerText = match.Groups[1].Value;
+                string paramPattern = @"\s*(\w+)\s*(:\s*(\w+))?";
+                MatchCollection matches = Regex.Matches(innerText, paramPattern);
+
+                string newParams = "";
+                foreach (Match paramMatch in matches)
+                {
+                    if (paramMatch.Groups[3].Success)
+                        newParams += $"{paramMatch.Groups[3].Value} {paramMatch.Groups[1].Value}, ";
+                    else
+                        newParams += $"{paramMatch.Groups[1].Value}, ";
+                }
+
+                newParams = newParams.TrimEnd(',', ' ');
+                return $"({newParams})";
+            });
+
+            _code = new StringBuilder(replaced);
         }
 
         private void ReplaceBrackets()
@@ -48,9 +79,13 @@ namespace GdsToJenovaCpp.Builders
         {
             var codeBuilder = new StringBuilder(codeAgain + Expressions.ParserInterLang.EndOfParsedRegion);
             codeBuilder.Replace($"{Expressions.Jenova.LeftBracket}{Expressions.Jenova.EndOfCommand}", $"{Expressions.Jenova.LeftBracket}");
-            codeBuilder.Replace($"{Expressions.GdScript.Indent}{Expressions.ParserInterLang.EndOfParsedRegion}", $"{Expressions.Jenova.RightBracket}{Expressions.NewLine}");
+            codeBuilder.Replace($"{Expressions.GdScript.Indent}{Expressions.Jenova.EndOfCommand}", $"{Expressions.Jenova.RightBracket}{Expressions.NewLine}");
             codeBuilder.Replace($"{Expressions.Jenova.RightBracket}{Expressions.NewLine}{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
             codeBuilder.Replace($"{Expressions.Jenova.RightBracket}{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
+            codeBuilder.Replace($"{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
+            codeBuilder.Replace($"{Expressions.ParserInterLang.EndOfParsedRegion}", "");
+            codeBuilder.Replace($"{Expressions.NewLine}{Expressions.NewLine}{Expressions.Jenova.EndOfCommand}", "");
+            codeBuilder.Replace($"{Expressions.NewLine}{Expressions.Jenova.EndOfCommand}", "");
 
             return codeBuilder.ToString();
         }
@@ -92,6 +127,7 @@ namespace GdsToJenovaCpp.Builders
         private List<string> ReformatToLinesList()
         {
             List<string> lines = _code.ToString().Split(Expressions.NewLine, StringSplitOptions.None).ToList();
+            lines.Add(Expressions.NewLine);
             lines.Add(Expressions.NewLine);
             return lines;
         }

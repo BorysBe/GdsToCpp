@@ -29,7 +29,10 @@
 	  <None Update="jenova-output.cpp">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-	  <None Update="script.gd">
+	  <None Update="GDScriptSamples\many_intends.gd">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="GDScriptSamples\script.gd">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>

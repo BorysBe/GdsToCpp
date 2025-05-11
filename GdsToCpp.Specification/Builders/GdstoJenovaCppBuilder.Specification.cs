@@ -2,6 +2,7 @@ using FluentAssertions;
 using GdsToCpp.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using GdsToJenovaCpp.Builders;
+using System;
 
 namespace GdsToJenovaCpp.Specification.Controllers
 {
@@ -36,6 +37,22 @@ namespace GdsToJenovaCpp.Specification.Controllers
             // Assert
             var expected = "void shake_camera_random(float rangeX, float rangeY) \r\n{\r\n    camera_shake->call(\"apply_noise_shake\", Array::make(Math::randf_range(-rangeX, rangeX), Math::randf_range(-rangeY, rangeY)));\r\n}";
             result.Should().Be(expected);
+        }
+
+        [Fact]
+        public async Task Should_change_gdscript_function_parameters_into_c_style_methods()
+        {
+            // Arrange
+            var gds = File.ReadAllText(@"GDScriptSamples\many_intends.gd");
+            var builder = new GdsToJenovaCppBuilder(gds);
+
+            // Act
+            builder.ReplaceMethods();
+            var result = builder.Build();
+
+            // Assert
+            result.Should().Contain("(Area2D area)");
+            result.Should().Contain("(rangeX, rangeY)");
         }
     }
 }

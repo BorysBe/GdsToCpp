@@ -9,6 +9,12 @@
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="many_intends.gd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <PropertyGroup>
 	<PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
