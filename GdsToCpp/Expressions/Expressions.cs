@@ -2,7 +2,7 @@
 {
     public static class Jenova
     {
-        public static string CommentSymbol = "//";
+        public static string Comment = "//";
         public static string LeftBracket = "{";
         public static string RightBracket = "}";
         public static string EndOfCommand = ";";
@@ -10,7 +10,7 @@
 
     public static class GdScript
     {
-        public static string CommentSymbol = "#";
+        public static string Comment = "#";
         public static string Indent = "\t";
     }
 

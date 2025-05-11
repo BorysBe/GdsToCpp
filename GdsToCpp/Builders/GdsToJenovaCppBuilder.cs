@@ -14,7 +14,7 @@ namespace GdsToJenovaCpp.Builders
 
         public GdsToJenovaCppBuilder ReplaceComments()
         {
-            _code.Replace(Expressions.GdScript.CommentSymbol, Expressions.Jenova.CommentSymbol + Expressions.SpaceChar);
+            _code.Replace(Expressions.GdScript.Comment, Expressions.Jenova.Comment + Expressions.SpaceChar);
             return this;
         }
 
@@ -62,9 +62,9 @@ namespace GdsToJenovaCpp.Builders
             bool closedBracketSpotted = false;
             for (var idx = 0; idx < linesCount; idx++)
             {
-                if (lines[idx].Contains("{"))
+                if (lines[idx].Contains($"{Expressions.Jenova.LeftBracket}"))
                     openBracketSpotted = true;
-                if (lines[idx].Contains("}"))
+                if (lines[idx].Contains($"{Expressions.Jenova.RightBracket}"))
                 {
                     openBracketSpotted = false;
                     closedBracketSpotted = true;
@@ -72,18 +72,18 @@ namespace GdsToJenovaCpp.Builders
 
                 if (openBracketSpotted && lines[idx] == "")
                 {
-                    lines[idx] = "}\r\n";
+                    lines[idx] = $"{Expressions.Jenova.RightBracket}{Expressions.NewLine}";
                 }
                 else
                     if (openBracketSpotted && lines[idx] != "" && !lines[idx].Contains("void"))
                 {
-                    lines[idx] = lines[idx] + ";";
+                    lines[idx] = lines[idx] + Expressions.Jenova.EndOfCommand;
                 }
             }
             var codeAgain = string.Empty;
             for (var idx = 0; idx < linesCount - 1; idx++)
             {
-                codeAgain += lines[idx] + "\r\n";
+                codeAgain += lines[idx] + Expressions.NewLine;
             }
 
             return codeAgain;
@@ -91,8 +91,8 @@ namespace GdsToJenovaCpp.Builders
 
         private List<string> ReformatToLinesList()
         {
-            List<string> lines = _code.ToString().Split("\r\n", StringSplitOptions.None).ToList();
-            lines.Add("\r\n");
+            List<string> lines = _code.ToString().Split(Expressions.NewLine, StringSplitOptions.None).ToList();
+            lines.Add(Expressions.NewLine);
             return lines;
         }
 
