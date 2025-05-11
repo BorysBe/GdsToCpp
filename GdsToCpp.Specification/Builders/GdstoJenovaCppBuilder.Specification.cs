@@ -24,7 +24,7 @@ namespace GdsToJenovaCpp.Specification.Controllers
         public void Should_replace_gds_methods_with_c_style_methods()
         {
             // Arrange
-            var gds = "func shake_camera_random(rangeX, rangeY):\r\n\tcamera_shake.apply_noise_shake(randf_range(-rangeX,rangeX),randf_range(-rangeY,rangeY))\r\n\r\n";
+            var gds = "func shake_camera_random(rangeX, rangeY):\r\n\tcamera_shake.apply_noise_shake(randf_range(-rangeX,rangeX), randf_range(-rangeY,rangeY))\r\n\r\n";
             var builder = new GdsToJenovaCppBuilder(gds);
 
             // Act
@@ -34,7 +34,7 @@ namespace GdsToJenovaCpp.Specification.Controllers
 
             // Assert
             var result = builder.Build();
-            var expected = "void shake_camera_random(float rangeX, float rangeY)\r\n{\r\n\tcamera_shake.apply_noise_shake(UtilityFunctions::randf_range(-rangeX, rangeX), UtilityFunctions::randf_range(-rangeY, rangeY)));\r\n}";
+            var expected = "void shake_camera_random(float rangeX, float rangeY)\r\n{\r\n\tcamera_shake.apply_noise_shake(UtilityFunctions::randf_range(-rangeX, rangeX), UtilityFunctions::randf_range(-rangeY, rangeY));\r\n}";
             result.Should().Contain(expected);
         }
 
