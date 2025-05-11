@@ -1,5 +1,10 @@
 ﻿public static class Expressions
 {
+    public static List<string> GodotUtilities = new List<string>()
+    {
+        { "randf_range" }
+    };
+
     public static class Jenova
     {
         public static string Comment = "//";
