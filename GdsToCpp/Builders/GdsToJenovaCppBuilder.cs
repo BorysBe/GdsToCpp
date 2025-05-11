@@ -14,7 +14,7 @@ namespace GdsToJenovaCpp.Builders
 
         public GdsToJenovaCppBuilder ReplaceComments()
         {
-            _code.Replace("#", "// ");
+            _code.Replace(Expressions.GdScript.CommentSymbol, Expressions.Jenova.CommentSymbol + Expressions.SpaceChar);
             return this;
         }
 
@@ -26,11 +26,11 @@ namespace GdsToJenovaCpp.Builders
         public GdsToJenovaCppBuilder ReplaceMethods()
         {
             _code.Replace("func ", "void ");
-            _code.Replace("{", "ESCLBracket");
+            _code.Replace(Expressions.Jenova.LeftBracket, Expressions.ParserInterLang.LeftCppBracketEscaped);
             _code.Replace(":=", "=");
             ReplaceMethodHeaderForVoid();
             ReplaceBrackets();
-            _code.Replace("ESCLBracket", "{");
+            _code.Replace(Expressions.ParserInterLang.LeftCppBracketEscaped, Expressions.Jenova.LeftBracket);
             return this;
         }
 
@@ -46,11 +46,11 @@ namespace GdsToJenovaCpp.Builders
 
         private static string CleanupBracketErrors(string codeAgain)
         {
-            var codeBuilder = new StringBuilder(codeAgain + "CLOSURE");
-            codeBuilder.Replace("{;", "{");
-            codeBuilder.Replace("\t;", "}\r\n");
-            codeBuilder.Replace("}\r\n\r\nCLOSURE", "");
-            codeBuilder.Replace("}\r\nCLOSURE", "");
+            var codeBuilder = new StringBuilder(codeAgain + Expressions.ParserInterLang.EndOfParsedRegion);
+            codeBuilder.Replace($"{Expressions.Jenova.LeftBracket}{Expressions.Jenova.EndOfCommand}", $"{Expressions.Jenova.LeftBracket}");
+            codeBuilder.Replace($"{Expressions.GdScript.Indent}{Expressions.ParserInterLang.EndOfParsedRegion}", $"{Expressions.Jenova.RightBracket}{Expressions.NewLine}");
+            codeBuilder.Replace($"{Expressions.Jenova.RightBracket}{Expressions.NewLine}{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
+            codeBuilder.Replace($"{Expressions.Jenova.RightBracket}{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
 
             return codeBuilder.ToString();
         }
