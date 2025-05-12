@@ -161,14 +161,20 @@ namespace GdsToJenovaCpp.Builders
             ForVariablesStoringMemoryAddressOfAnObjectUseArrowOperator();
             List<string> lines = LoadAsCodeLineList();
             string codeAgain = PutClosingBrackets(lines);
-            codeAgain = CleanupBracketErrors(codeAgain);
-            _code = new StringBuilder(codeAgain.Trim());
+            _code = CleanupBracketErrors(codeAgain);
         }
 
-        private static string CleanupBracketErrors(string codeAgain)
+        /// <summary>
+        /// Correct errors from still not perfect algorithm
+        /// </summary>
+        /// <param name="codeAgain"></param>
+        /// <returns></returns>
+        private static StringBuilder CleanupBracketErrors(string codeAgain)
         {
-            codeAgain = codeAgain.Replace($"{Expressions.NewLine}{Expressions.GdScript.Indent}{Expressions.NewLine}", $"{Expressions.NewLine}");
-            return codeAgain;
+            var code = new StringBuilder(codeAgain);
+            for (int idx = 0; idx < 2; idx++)
+                code.Replace($"{Expressions.NewLine}{Expressions.GdScript.Indent}{Expressions.NewLine}", $"{Expressions.NewLine}");
+            return code;
         }
 
         private static string PutClosingBrackets(List<string> lines)
@@ -230,7 +236,7 @@ namespace GdsToJenovaCpp.Builders
                 openBracketsIndices.Pop();
             }
 
-            return string.Join(Expressions.NewLine, updatedLines);
+            return string.Join(Expressions.NewLine, updatedLines).Trim();
         }
 
         private static string FixSemicolon(string line)
