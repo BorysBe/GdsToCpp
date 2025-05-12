@@ -133,18 +133,18 @@ namespace GdsToJenovaCpp.Builders
             }
             var paramItem = buffer.ToString().Trim();
             paramItem = paramItem.Replace(",", ", ");
-            paramList.Add(paramItem); // Dodaj ostatni parametr
+            paramList.Add(paramItem);
 
             for (int i = 0; i < paramList.Count; i++)
             {
                 string param = paramList[i];
 
-                if (param.Contains(":")) // Jeśli parametr ma typ, odwróć jego kolejność
+                if (param.Contains(":"))
                 {
                     string[] parts = param.Split(':');
                     paramList[i] = $"{parts[1].Trim()} {parts[0].Trim()}";
                 }
-                else if (!param.Contains("(")) // Jeśli parametr nie jest funkcją, rozdziel elementy poprawnie
+                else if (!param.Contains("("))
                 {
                     paramList[i] = param.Replace(",", ", ");
                 }
@@ -165,7 +165,7 @@ namespace GdsToJenovaCpp.Builders
 
         private static string CleanupBracketErrors(string codeAgain)
         {
-            codeAgain = codeAgain.Replace($"{Expressions.NewLine}{Expressions.GdScript.Indent}{Expressions.GdScript.Indent}{Expressions.NewLine}", $"{Expressions.NewLine}");
+            codeAgain = codeAgain.Replace($"{Expressions.NewLine}{Expressions.GdScript.Indent}{Expressions.NewLine}", $"{Expressions.NewLine}");
             return codeAgain;
         }
 
@@ -183,7 +183,7 @@ namespace GdsToJenovaCpp.Builders
                 if (isFunctionStart)
                 {
                     insideBlock = true;
-                    updatedLines.Add(currentLine); // **Nie dodajemy wcięcia przed `{`**
+                    updatedLines.Add(currentLine);
 
                     if (idx + 1 < lines.Count && !lines[idx + 1].Trim().StartsWith(Expressions.Jenova.LeftBracket))
                     {
@@ -194,7 +194,12 @@ namespace GdsToJenovaCpp.Builders
                 else if (insideBlock)
                 {
                     if (lines[idx] != Expressions.Jenova.LeftBracket)
-                        updatedLines.Add("\t" + FixSemicolon(lines[idx]));
+                    {
+                        if (!lines[idx].StartsWith("\t"))
+                            updatedLines.Add("\t" + FixSemicolon(lines[idx]));
+                        else
+                            updatedLines.Add(FixSemicolon(lines[idx]));
+                    }
                     else
                         updatedLines.Add(lines[idx]);
                 }
@@ -229,8 +234,11 @@ namespace GdsToJenovaCpp.Builders
         private static string FixSemicolon(string line)
         {
             string trimmedLine = line.Trim();
+            if (trimmedLine.Length == 0) 
+                return line;
 
-            bool needsSemicolon = !string.IsNullOrWhiteSpace(trimmedLine) &&
+            bool needsSemicolon = trimmedLine.Contains("return ") ||
+                                  !string.IsNullOrWhiteSpace(trimmedLine) &&
                                   !trimmedLine.EndsWith("{") && !trimmedLine.EndsWith("}") &&
                                   !trimmedLine.EndsWith(";") &&
                                   !Regex.IsMatch(trimmedLine, @"^\s*(if|while|for|return)\b");
