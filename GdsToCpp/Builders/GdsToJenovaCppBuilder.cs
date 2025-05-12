@@ -44,9 +44,11 @@ namespace GdsToJenovaCpp.Builders
             {
                 addUtilities = code.Contains(godotFunc);
                 if (addUtilities)
+                {
                     _code.Insert(0, "#include <Godot/variant/utility_functions.hpp>" + Expressions.NewLine);
                     _code.Replace(godotFunc, $"UtilityFunctions::{godotFunc}");
                     break;
+                }
             }
             return this;
         }
@@ -155,7 +157,7 @@ namespace GdsToJenovaCpp.Builders
 
         private void ReplaceBrackets()
         {
-            string rebuilt = RebuiltStringWithOpenBracketsGeneratedOnTheFly();
+            string rebuilt = _code.ToString();
             ForVariablesStoringMemoryAddressOfAnObjectUseArrowOperator();
             List<string> lines = LoadAsCodeLineList();
             string codeAgain = PutClosingBrackets(lines);
@@ -249,7 +251,7 @@ namespace GdsToJenovaCpp.Builders
         private static string MakeCodeAgainFrom(List<string> lines)
         {
             var codeAgain = string.Empty;
-            for (var idx = 0; idx < lines.Count - 1; idx++)
+            for (var idx = 0; idx < lines.Count; idx++)
             {
                 codeAgain += lines[idx] + Expressions.NewLine;
             }
@@ -264,11 +266,6 @@ namespace GdsToJenovaCpp.Builders
             return lines;
         }
 
-        private string RebuiltStringWithOpenBracketsGeneratedOnTheFly()
-        {
-            return _code.ToString();
-        }
-
         private void ForVariablesStoringMemoryAddressOfAnObjectUseArrowOperator()
         {
             _code.Replace("().", "()->");
@@ -276,11 +273,13 @@ namespace GdsToJenovaCpp.Builders
 
         private void ReplaceMethodHeaderForVoid()
         {
+            var test2 = _code.ToString();
             var newMethodSyntaxBracketSection = $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}";
             _code.Replace($" -> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
             _code.Replace($"-> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
             _code.Replace($" ->void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
             _code.Replace($"):{Expressions.NewLine}{Expressions.GdScript.Indent}", $"){newMethodSyntaxBracketSection}");
+            var test = _code.ToString();
         }
 
         [GeneratedRegex(@"(\w+)\s*\(\s*\)")]

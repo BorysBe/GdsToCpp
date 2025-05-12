@@ -1,4 +1,5 @@
-﻿extends CharacterBody2D
+﻿#include <Godot/variant/utility_functions.hpp>
+extends CharacterBody2D
 class_name Player
 
 @export var speed := 320.0
