@@ -22,6 +22,7 @@ namespace GdsToCpp.Controllers
 
             string cppCode = new GdsToJenovaCppBuilder(value)
                 .ReplaceComments()
+                .AddGodotFunctionsUtilitiesHeader()
                 .ReplaceMethods()
                 .Build();
 

@@ -12,15 +12,15 @@ namespace GdsToJenovaCpp.Builders
             _code = new StringBuilder(content);
         }
 
+        public string Build()
+        {
+            return _code.ToString();
+        }
+
         public GdsToJenovaCppBuilder ReplaceComments()
         {
             _code.Replace(Expressions.GdScript.Comment, Expressions.Jenova.Comment + Expressions.SpaceChar);
             return this;
-        }
-
-        public string Build()
-        {
-            return _code.ToString();
         }
 
         public GdsToJenovaCppBuilder ReplaceMethods()
@@ -64,35 +64,32 @@ namespace GdsToJenovaCpp.Builders
 
         static string AddFloatTypeToFuncParams(string input)
         {
-            string pattern = @"^\s*func\s+(\w+)\s*\(([^)]*)\)"; // Dopasowanie definicji funkcji
+            string pattern = @"^\s*func\s+(\w+)\s*\(([^)]*)\)";
             Match match = Regex.Match(input.Trim(), pattern);
 
-            if (!match.Success) return input; // Jeśli nie pasuje do funkcji, zwraca oryginalny string
+            if (!match.Success)
+                return input;
 
             string funcName = match.Groups[1].Value;
             string paramsSection = match.Groups[2].Value;
+            if (paramsSection == "")
+                return input;
 
-            // Podziel parametry na poszczególne elementy
             string[] paramList = paramsSection.Split(',');
-
             for (int i = 0; i < paramList.Length; i++)
             {
                 string param = paramList[i].Trim();
+                if (param.Contains(":")) 
+                    continue;
 
-                // Jeśli parametr już zawiera ":" (np. "area: Area2D"), zostawiamy go nietkniętym
-                if (param.Contains(":")) continue;
-
-                // W przeciwnym razie dodajemy "float" przed nazwą zmiennej
                 paramList[i] = $"float {param}";
             }
 
-            // Połącz poprawione parametry w nowy string
             string updatedParams = string.Join(", ", paramList);
-
             if (!updatedParams.HasValue())
                 return input;
 
-            return $"func {funcName}({updatedParams})";
+            return $"func {funcName}({updatedParams}):";
         }
 
         /// <summary>
@@ -242,11 +239,11 @@ namespace GdsToJenovaCpp.Builders
         private void ReplaceMethodHeaderForVoid()
         {
             var tst = _code.ToString();
-            _code.Replace($" -> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}");
-            _code.Replace($"-> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}");
-            _code.Replace($" ->void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}");
-            _code.Replace($"){Expressions.NewLine}{Expressions.GdScript.Indent}", $"){Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}");
-            _code.Replace($":{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}");
+            var newMethodSyntaxBracketSection = $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}";
+            _code.Replace($" -> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
+            _code.Replace($"-> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
+            _code.Replace($" ->void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
+            _code.Replace($"):{Expressions.NewLine}{Expressions.GdScript.Indent}", $"){newMethodSyntaxBracketSection}");
         }
 
         [GeneratedRegex(@"(\w+)\s*\(\s*\)")]
