@@ -165,46 +165,77 @@ namespace GdsToJenovaCpp.Builders
 
         private static string CleanupBracketErrors(string codeAgain)
         {
-            var codeBuilder = new StringBuilder(codeAgain + Expressions.ParserInterLang.EndOfParsedRegion);
-            codeBuilder.Replace($"{Expressions.Jenova.LeftBracket}{Expressions.Jenova.EndOfCommand}", $"{Expressions.Jenova.LeftBracket}");
-            codeBuilder.Replace($"{Expressions.GdScript.Indent}{Expressions.Jenova.EndOfCommand}", $"{Expressions.Jenova.RightBracket}{Expressions.NewLine}");
-            codeBuilder.Replace($"{Expressions.Jenova.RightBracket}{Expressions.NewLine}{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
-            codeBuilder.Replace($"{Expressions.Jenova.RightBracket}{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
-            codeBuilder.Replace($"{Expressions.NewLine}{Expressions.ParserInterLang.EndOfParsedRegion}", "");
-            codeBuilder.Replace($"{Expressions.ParserInterLang.EndOfParsedRegion}", "");
-            codeBuilder.Replace($"{Expressions.NewLine}{Expressions.NewLine}{Expressions.Jenova.EndOfCommand}", "");
-            codeBuilder.Replace($"{Expressions.NewLine}{Expressions.Jenova.EndOfCommand}", "");
-
-            return codeBuilder.ToString();
+            codeAgain = codeAgain.Replace($"{Expressions.NewLine}{Expressions.GdScript.Indent}{Expressions.GdScript.Indent}{Expressions.NewLine}", $"{Expressions.NewLine}");
+            return codeAgain;
         }
 
         private static string PutClosingBrackets(List<string> lines)
         {
-            var linesCount = lines.Count();
-            bool openBracketSpotted = false;
-            bool closedBracketSpotted = false;
-            for (var idx = 0; idx < linesCount; idx++)
-            {
-                if (lines[idx].Contains($"{Expressions.Jenova.LeftBracket}"))
-                    openBracketSpotted = true;
-                if (lines[idx].Contains($"{Expressions.Jenova.RightBracket}"))
-                {
-                    openBracketSpotted = false;
-                    closedBracketSpotted = true;
-                }
+            Stack<int> openBracketsIndices = new Stack<int>();
+            List<string> updatedLines = new List<string>();
+            bool insideBlock = false;
 
-                if (openBracketSpotted && lines[idx] == "")
+            for (int idx = 0; idx < lines.Count; idx++)
+            {
+                string currentLine = lines[idx].Trim();
+                bool isFunctionStart = Regex.IsMatch(currentLine, @"^\s*\w+\s+\w+\s*\(.*\)$");
+
+                if (isFunctionStart)
                 {
-                    lines[idx] = $"{Expressions.Jenova.RightBracket}{Expressions.NewLine}";
+                    insideBlock = true;
+                    updatedLines.Add(currentLine); // **Nie dodajemy wcięcia przed `{`**
+
+                    if (idx + 1 < lines.Count && !lines[idx + 1].Trim().StartsWith(Expressions.Jenova.LeftBracket))
+                    {
+                        updatedLines.Add(Expressions.Jenova.LeftBracket);
+                    }
+                    openBracketsIndices.Push(updatedLines.Count - 1);
+                }
+                else if (insideBlock)
+                {
+                    if (lines[idx] != Expressions.Jenova.LeftBracket)
+                        updatedLines.Add("\t" + FixSemicolon(lines[idx]));
+                    else
+                        updatedLines.Add(lines[idx]);
                 }
                 else
-                    if (openBracketSpotted && lines[idx] != "" && !lines[idx].Contains("void"))
+                {
+                    updatedLines.Add(lines[idx]);
+                }
+
+                bool isNewFunctionComing = idx + 1 < lines.Count && Regex.IsMatch(lines[idx + 1].Trim(), @"^\s*\w+\s+\w+\s*\(.*\)$");
+
+                if (openBracketsIndices.Count > 0 && isNewFunctionComing)
+                {
+                    if (!updatedLines.Last().Trim().EndsWith(Expressions.Jenova.RightBracket))
                     {
-                        lines[idx] = lines[idx] + Expressions.Jenova.EndOfCommand;
+                        updatedLines.Add(Expressions.Jenova.RightBracket);
                     }
+                    updatedLines.Add("");
+                    insideBlock = false;
+                    openBracketsIndices.Pop();
+                }
             }
-            string codeAgain = MakeCodeAgainFrom(lines);
-            return codeAgain;
+
+            while (openBracketsIndices.Count > 0)
+            {
+                updatedLines.Add(Expressions.Jenova.RightBracket);
+                openBracketsIndices.Pop();
+            }
+
+            return string.Join(Expressions.NewLine, updatedLines);
+        }
+
+        private static string FixSemicolon(string line)
+        {
+            string trimmedLine = line.Trim();
+
+            bool needsSemicolon = !string.IsNullOrWhiteSpace(trimmedLine) &&
+                                  !trimmedLine.EndsWith("{") && !trimmedLine.EndsWith("}") &&
+                                  !trimmedLine.EndsWith(";") &&
+                                  !Regex.IsMatch(trimmedLine, @"^\s*(if|while|for|return)\b");
+
+            return needsSemicolon ? "\t" + trimmedLine + ";" : "\t" + trimmedLine;
         }
 
         private static string MakeCodeAgainFrom(List<string> lines)
@@ -220,9 +251,8 @@ namespace GdsToJenovaCpp.Builders
 
         private List<string> LoadAsCodeLineList()
         {
-            List<string> lines = _code.ToString().Split(Expressions.NewLine, StringSplitOptions.None).ToList();
-            lines.Add(Expressions.NewLine);
-            lines.Add(Expressions.NewLine);
+            var code = _code.ToString();
+            List<string> lines = code.Split(Expressions.NewLine, StringSplitOptions.None).ToList();
             return lines;
         }
 
@@ -238,7 +268,6 @@ namespace GdsToJenovaCpp.Builders
 
         private void ReplaceMethodHeaderForVoid()
         {
-            var tst = _code.ToString();
             var newMethodSyntaxBracketSection = $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}";
             _code.Replace($" -> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
             _code.Replace($"-> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
