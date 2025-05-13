@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace GdsToJenovaCpp.Builders
+namespace GdsToJenovaCpp.Main.Builders
 {
     public partial class GdsToJenovaCppBuilder
     {

@@ -1,4 +1,4 @@
-﻿namespace GdsToJenovaCpp.Builders
+﻿namespace GdsToJenovaCpp.Main.Builders
 {
     public static class ObjExt
     {

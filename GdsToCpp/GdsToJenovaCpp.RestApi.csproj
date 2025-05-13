@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GdsToJenovaCpp.Main\GdsToJenovaCpp.Main.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="many_intends.gd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using GdsToJenovaCpp.Builders;
+using GdsToJenovaCpp.Main.Builders;
 
 namespace GdsToJenovaCpp.Specification.Controllers
 {
