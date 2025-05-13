@@ -1,5 +1,5 @@
 using FluentAssertions;
-using GdsToCpp.Controllers;
+using GdsToJenovaCpp.RestApi.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GdsToJenovaCpp.Specification.Controllers

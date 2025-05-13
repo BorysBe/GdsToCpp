@@ -1,7 +1,7 @@
 ﻿using GdsToJenovaCpp.Main.Builders;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GdsToCpp.Controllers
+namespace GdsToJenovaCpp.RestApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

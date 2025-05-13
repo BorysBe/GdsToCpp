@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GdsToJenovaCpp.RestApi", "GdsToJenovaCpp.RestApi.csproj", "{C23A09B6-D1B9-4AF4-92D6-442FF7254846}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GdsToJenovaCpp.RestApi", ".\GdsToJenovaCpp.RestApi\GdsToJenovaCpp.RestApi.csproj", "{C23A09B6-D1B9-4AF4-92D6-442FF7254846}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GdsToJenovaCpp.Specification", "..\GdsToCpp.Specification\GdsToJenovaCpp.Specification.csproj", "{4950F154-1D62-4A23-B922-A077EB5259AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GdsToJenovaCpp.Specification", ".\GdsToJenovaCpp.Specification\GdsToJenovaCpp.Specification.csproj", "{4950F154-1D62-4A23-B922-A077EB5259AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GdsToJenovaCpp.Main", "..\GdsToJenovaCpp.Main\GdsToJenovaCpp.Main.csproj", "{4EB2C966-3FA9-41D8-A955-8DF876F42A12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GdsToJenovaCpp.Main", ".\GdsToJenovaCpp.Main\GdsToJenovaCpp.Main.csproj", "{4EB2C966-3FA9-41D8-A955-8DF876F42A12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
