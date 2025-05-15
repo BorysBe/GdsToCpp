@@ -26,14 +26,76 @@ namespace GdsToJenovaCpp.Main.Builders
         public GdsToJenovaCppBuilder ReplaceMethods()
         {
             AddFloatTypeToAllFuncParams();
+            PutBrackcketsForIfStatements();
             _code.Replace("func ", "void ");
             _code.Replace(Expressions.Jenova.LeftBracket, Expressions.ParserInterLang.LeftCppBracketEscaped);
             _code.Replace(":=", "=");
             ReplaceMethodHeaderForVoid();
-            ReplaceBrackets();
+            ForVariablesStoringMemoryAddressOfAnObjectUseArrowOperator();
             ReverseParametersOrderInFunctionDeclarationBrackets();
             _code.Replace(Expressions.ParserInterLang.LeftCppBracketEscaped, Expressions.Jenova.LeftBracket);
             return this;
+        }
+
+        private void PutBrackcketsForIfStatements()
+        {
+            var lines = LoadAsCodeLineList();
+            lines.Append("");
+            var previousIndentCount = 0;
+            bool previouslySpottedFunc = false;
+
+            for (int idx = 0; idx < lines.Count; idx++)
+            {
+                var input = lines[idx];
+                string pattern = @"^(\s*)(if|elif)\s+(\w+)\.(\w+)\((.*?)\):";
+                Regex regex = new Regex(pattern, RegexOptions.Multiline);
+                var leadingIntend = "";
+                if (previousIndentCount > 0 && input.Length == 0)
+                {
+                    for (int i = 0; i < previousIndentCount - 1; i++)
+                    {
+                        leadingIntend += "\t";
+                    }
+
+                    lines[idx] = leadingIntend + "}\r\n";
+                    previousIndentCount = 0;
+                    continue;
+                }
+                var trim = lines[idx].Trim().Length;
+                var lgth = lines[idx].Length;
+                previousIndentCount = lgth - trim;
+
+                string output = regex.Replace(input, match =>
+                {
+                    string leadingIntend = match.Groups[1].Value;
+                    if (match.Groups[2].Value == "if")
+                    {
+                        return $"{leadingIntend}if ({match.Groups[3].Value}.{match.Groups[4].Value}({match.Groups[5].Value}))\n{leadingIntend}{{{leadingIntend}";
+                    }
+                    else if (match.Groups[2].Value == "elif")
+                    {
+                        return $"{leadingIntend}}}\r\n{leadingIntend}else\r\n{leadingIntend}if ({match.Groups[3].Value}.{match.Groups[4].Value}({match.Groups[5].Value}))\n{leadingIntend}{{{leadingIntend}";
+                    }
+
+                    return input;
+                });
+                if (input.Trim().StartsWith("func"))
+                {
+                    if (previouslySpottedFunc)
+                    {
+                        lines[idx] =  $"{leadingIntend}\r\n}}\r\n\r\n" + FixSemicolon(lines[idx]);
+                        previouslySpottedFunc = false;
+                    }
+                    lines[idx] = FixSemicolon(lines[idx]) + $"\r\n{leadingIntend}{{";
+                    previouslySpottedFunc = true;
+
+                }
+                else
+                    lines[idx] = FixSemicolon(output);
+            }
+
+            var str = string.Join(Expressions.NewLine, lines).Trim();
+            _code = new StringBuilder(str);
         }
 
         public GdsToJenovaCppBuilder AddGodotFunctionsUtilitiesHeader()
@@ -155,90 +217,6 @@ namespace GdsToJenovaCpp.Main.Builders
             return string.Join(", ", paramList);
         }
 
-        private void ReplaceBrackets()
-        {
-            string rebuilt = _code.ToString();
-            ForVariablesStoringMemoryAddressOfAnObjectUseArrowOperator();
-            List<string> lines = LoadAsCodeLineList();
-            string codeAgain = PutClosingBrackets(lines);
-            _code = CleanupBracketErrors(codeAgain);
-        }
-
-        /// <summary>
-        /// Correct errors from still not perfect algorithm
-        /// </summary>
-        /// <param name="codeAgain"></param>
-        /// <returns></returns>
-        private static StringBuilder CleanupBracketErrors(string codeAgain)
-        {
-            var code = new StringBuilder(codeAgain);
-            for (int idx = 0; idx < 2; idx++)
-                code.Replace($"{Expressions.NewLine}{Expressions.GdScript.Indent}{Expressions.NewLine}", $"{Expressions.NewLine}");
-            return code;
-        }
-
-        private static string PutClosingBrackets(List<string> lines)
-        {
-            Stack<int> openBracketsIndices = new Stack<int>();
-            List<string> updatedLines = new List<string>();
-            bool insideBlock = false;
-
-            for (int idx = 0; idx < lines.Count; idx++)
-            {
-                string currentLine = lines[idx].Trim();
-                bool isFunctionStart = Regex.IsMatch(currentLine, @"^\s*\w+\s+\w+\s*\(.*\)$");
-
-                if (isFunctionStart)
-                {
-                    insideBlock = true;
-                    updatedLines.Add(currentLine);
-
-                    if (idx + 1 < lines.Count && !lines[idx + 1].Trim().StartsWith(Expressions.Jenova.LeftBracket))
-                    {
-                        updatedLines.Add(Expressions.Jenova.LeftBracket);
-                    }
-                    openBracketsIndices.Push(updatedLines.Count - 1);
-                }
-                else if (insideBlock)
-                {
-                    if (lines[idx] != Expressions.Jenova.LeftBracket)
-                    {
-                        if (!lines[idx].StartsWith("\t"))
-                            updatedLines.Add("\t" + FixSemicolon(lines[idx]));
-                        else
-                            updatedLines.Add(FixSemicolon(lines[idx]));
-                    }
-                    else
-                        updatedLines.Add(lines[idx]);
-                }
-                else
-                {
-                    updatedLines.Add(lines[idx]);
-                }
-
-                bool isNewFunctionComing = idx + 1 < lines.Count && Regex.IsMatch(lines[idx + 1].Trim(), @"^\s*\w+\s+\w+\s*\(.*\)$");
-
-                if (openBracketsIndices.Count > 0 && isNewFunctionComing)
-                {
-                    if (!updatedLines.Last().Trim().EndsWith(Expressions.Jenova.RightBracket))
-                    {
-                        updatedLines.Add(Expressions.Jenova.RightBracket);
-                    }
-                    updatedLines.Add("");
-                    insideBlock = false;
-                    openBracketsIndices.Pop();
-                }
-            }
-
-            while (openBracketsIndices.Count > 0)
-            {
-                updatedLines.Add(Expressions.Jenova.RightBracket);
-                openBracketsIndices.Pop();
-            }
-
-            return string.Join(Expressions.NewLine, updatedLines).Trim();
-        }
-
         private static string FixSemicolon(string line)
         {
             string trimmedLine = line.Trim();
@@ -247,11 +225,12 @@ namespace GdsToJenovaCpp.Main.Builders
 
             bool needsSemicolon = trimmedLine.Contains("return ") ||
                                   !string.IsNullOrWhiteSpace(trimmedLine) &&
-                                  !trimmedLine.EndsWith("{") && !trimmedLine.EndsWith("}") &&
+                                  (!trimmedLine.EndsWith("else")) &&
+                                  (!trimmedLine.EndsWith(Expressions.Jenova.LeftBracket) && !trimmedLine.EndsWith(Expressions.ParserInterLang.LeftCppBracketEscaped)) && !trimmedLine.EndsWith("}") &&
                                   !trimmedLine.EndsWith(";") &&
-                                  !Regex.IsMatch(trimmedLine, @"^\s*(if|while|for|return)\b");
+                                  !Regex.IsMatch(trimmedLine, @"^\s*(if|while|for|return|func)\b");
 
-            return needsSemicolon ? "\t" + trimmedLine + ";" : "\t" + trimmedLine;
+            return needsSemicolon ? line + ";" : line;
         }
 
         private static string MakeCodeAgainFrom(List<string> lines)
@@ -279,13 +258,10 @@ namespace GdsToJenovaCpp.Main.Builders
 
         private void ReplaceMethodHeaderForVoid()
         {
-            var test2 = _code.ToString();
-            var newMethodSyntaxBracketSection = $"{Expressions.NewLine}{Expressions.Jenova.LeftBracket}{Expressions.NewLine}{Expressions.GdScript.Indent}";
-            _code.Replace($" -> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
-            _code.Replace($"-> void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
-            _code.Replace($" ->void:{Expressions.NewLine}{Expressions.GdScript.Indent}", $"{newMethodSyntaxBracketSection}");
-            _code.Replace($"):{Expressions.NewLine}{Expressions.GdScript.Indent}", $"){newMethodSyntaxBracketSection}");
-            var test = _code.ToString();
+            _code.Replace($" -> void:", "");
+            _code.Replace($"-> void:", "");
+            _code.Replace($" ->void:", "");
+            _code.Replace($"):", $")");
         }
 
         [GeneratedRegex(@"(\w+)\s*\(\s*\)")]
