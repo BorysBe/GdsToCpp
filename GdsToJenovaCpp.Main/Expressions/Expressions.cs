@@ -22,6 +22,7 @@
     public static class ParserInterLang
     {
         public static string LeftCppBracketEscaped = "ESCLBracket";
+        public static string RightCppBracketEscaped = "ESCRBracket";
         public static string EndOfParsedRegion = "CLOSURE";
     }
 

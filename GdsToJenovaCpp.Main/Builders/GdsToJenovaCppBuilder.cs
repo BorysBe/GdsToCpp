@@ -26,18 +26,20 @@ namespace GdsToJenovaCpp.Main.Builders
         public GdsToJenovaCppBuilder ReplaceMethods()
         {
             AddFloatTypeToAllFuncParams();
-            PutBrackcketsForIfStatements();
-            _code.Replace("func ", "void ");
             _code.Replace(Expressions.Jenova.LeftBracket, Expressions.ParserInterLang.LeftCppBracketEscaped);
+            _code.Replace(Expressions.Jenova.RightBracket, Expressions.ParserInterLang.RightCppBracketEscaped);
+            PutBracketsForIfStatements();
+            _code.Replace("func ", "void ");
             _code.Replace(":=", "=");
             ReplaceMethodHeaderForVoid();
             ForVariablesStoringMemoryAddressOfAnObjectUseArrowOperator();
             ReverseParametersOrderInFunctionDeclarationBrackets();
             _code.Replace(Expressions.ParserInterLang.LeftCppBracketEscaped, Expressions.Jenova.LeftBracket);
+            _code.Replace(Expressions.ParserInterLang.RightCppBracketEscaped, Expressions.Jenova.RightBracket);
             return this;
         }
 
-        private void PutBrackcketsForIfStatements()
+        private void PutBracketsForIfStatements()
         {
             var lines = LoadAsCodeLineList();
             lines.Append("");
@@ -57,8 +59,11 @@ namespace GdsToJenovaCpp.Main.Builders
                         leadingIntend += "\t";
                     }
 
-                    lines[idx] = leadingIntend + "}\r\n";
-                    previousIndentCount = 0;
+                    if (previouslySpottedFunc)
+                    {
+                        lines[idx] = leadingIntend + "}\r\n";
+                        previousIndentCount = 0;
+                    }
                     continue;
                 }
                 var trim = lines[idx].Trim().Length;
@@ -223,12 +228,17 @@ namespace GdsToJenovaCpp.Main.Builders
             if (trimmedLine.Length == 0) 
                 return line;
 
-            bool needsSemicolon = trimmedLine.Contains("return ") ||
+            bool needsSemicolon = (!trimmedLine.EndsWith("}") &&
+                                  !trimmedLine.EndsWith("{") &&
+                                  !trimmedLine.EndsWith("]") &&
+                                  !trimmedLine.EndsWith("[") &&
+                                  !trimmedLine.EndsWith("else") &&
+                                  !trimmedLine.EndsWith(",") &&
                                   !string.IsNullOrWhiteSpace(trimmedLine) &&
-                                  (!trimmedLine.EndsWith("else")) &&
-                                  (!trimmedLine.EndsWith(Expressions.Jenova.LeftBracket) && !trimmedLine.EndsWith(Expressions.ParserInterLang.LeftCppBracketEscaped)) && !trimmedLine.EndsWith("}") &&
+                                  !trimmedLine.EndsWith(Expressions.Jenova.LeftBracket) && !trimmedLine.EndsWith(Expressions.ParserInterLang.LeftCppBracketEscaped)) && !trimmedLine.EndsWith("}") &&
                                   !trimmedLine.EndsWith(";") &&
-                                  !Regex.IsMatch(trimmedLine, @"^\s*(if|while|for|return|func)\b");
+                                  !Regex.IsMatch(trimmedLine, @"^\s*(if|while|for|func|#include)\b") &&
+                                  !Regex.IsMatch(trimmedLine, @"^}\s*(if|while|for|func|#include)\b");
 
             return needsSemicolon ? line + ";" : line;
         }
