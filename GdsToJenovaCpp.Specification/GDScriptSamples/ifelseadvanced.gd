@@ -14,6 +14,18 @@ var hp = 50:
 		create_tween_for_hp()
 		check_player_death()
 
+func update_checkpoint_position(area: Area2D):
+		Ut.check_point_position = area.global_position
+		checkpoint = area.global_position
+
+func save_camera_limits():
+		cam_limits = {
+			"left": $Camera2D.limit_left,
+			"right": $Camera2D.limit_right,
+			"top": $Camera2D.limit_top,
+			"bottom": $Camera2D.limit_bottom
+		}
+
 func update_shader_color():
 	$outline.material.set_shader_parameter("effect_enabled", true)
 	if hp >= 50:

@@ -24,6 +24,11 @@
         public static string LeftCppBracketEscaped = "ESCLBracket";
         public static string RightCppBracketEscaped = "ESCRBracket";
         public static string EndOfParsedRegion = "CLOSURE";
+        public static string RightBracketCleanup = "END__";
+        public static string RightBracketCleanup2 = "END2__";
+        public static string RightBracketCleanup3 = "END3__";
+        public static string RightBracketCleanup4 = "END4__";
+
     }
 
     public static string SpaceChar = " ";

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using static Expressions;
 
 namespace GdsToJenovaCpp.Main.Builders
 {
@@ -31,11 +32,16 @@ namespace GdsToJenovaCpp.Main.Builders
             PutBracketsForIfStatements();
             _code.Replace("func ", "void ");
             _code.Replace(":=", "=");
+            ReplaceMethodHeaderForBool();
             ReplaceMethodHeaderForVoid();
             ForVariablesStoringMemoryAddressOfAnObjectUseArrowOperator();
             ReverseParametersOrderInFunctionDeclarationBrackets();
             _code.Replace(Expressions.ParserInterLang.LeftCppBracketEscaped, Expressions.Jenova.LeftBracket);
             _code.Replace(Expressions.ParserInterLang.RightCppBracketEscaped, Expressions.Jenova.RightBracket);
+            _code.Replace(Expressions.ParserInterLang.RightBracketCleanup, "");
+            _code.Replace(Expressions.ParserInterLang.RightBracketCleanup2, "");
+            _code.Replace(Expressions.ParserInterLang.RightBracketCleanup3, "");
+            _code.Replace(Expressions.ParserInterLang.RightBracketCleanup4, "");
             return this;
         }
 
@@ -62,7 +68,7 @@ namespace GdsToJenovaCpp.Main.Builders
 
                     if (previouslySpottedFunc)
                     {
-                        lines[idx] = leadingIntend + "}\r\n";
+                        lines[idx] = leadingIntend + "}" + ParserInterLang.RightBracketCleanup + "\r\n";
                         previousIndentCount = 0;
                     }
                     continue;
@@ -89,7 +95,7 @@ namespace GdsToJenovaCpp.Main.Builders
                 {
                     if (previouslySpottedFunc)
                     {
-                        lines[idx] =  $"{leadingIntend}\r\n}}\r\n\r\n" + FixSemicolon(lines[idx]);
+                        lines[idx] =  $"{leadingIntend}}}{ParserInterLang.RightBracketCleanup2}\r\n\r\n" + FixSemicolon(lines[idx]);
                         previouslySpottedFunc = false;
                     }
                     lines[idx] = FixSemicolon(lines[idx]) + $"\r\n{leadingIntend}{{";
@@ -101,6 +107,9 @@ namespace GdsToJenovaCpp.Main.Builders
             }
 
             var str = string.Join(Expressions.NewLine, lines).Trim();
+            str = str.Replace($"\t}}{ParserInterLang.RightBracketCleanup}\r\n\r\n}}{ParserInterLang.RightBracketCleanup2}", $"\t}}{ParserInterLang.RightBracketCleanup3}\r\n}}{ParserInterLang.RightBracketCleanup4}");
+            str = str.Replace($"}}{ParserInterLang.RightBracketCleanup}\r\n\r\n}}{ParserInterLang.RightBracketCleanup2}", "}");
+
             _code = new StringBuilder(str);
         }
 
@@ -273,6 +282,13 @@ namespace GdsToJenovaCpp.Main.Builders
             _code.Replace($"-> void:", "");
             _code.Replace($" ->void:", "");
             _code.Replace($"):", $")");
+        }
+
+        private void ReplaceMethodHeaderForBool()
+        {
+            _code.Replace($" -> bool:", "");
+            _code.Replace($"-> bool:", "");
+            _code.Replace($" ->bool:", "");
         }
 
         [GeneratedRegex(@"(\w+)\s*\(\s*\)")]
