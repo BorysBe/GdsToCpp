@@ -30,6 +30,7 @@ namespace GdsToJenovaCpp.Main.Builders
             _code.Replace(Expressions.Jenova.LeftBracket, Expressions.ParserInterLang.LeftCppBracketEscaped);
             _code.Replace(Expressions.Jenova.RightBracket, Expressions.ParserInterLang.RightCppBracketEscaped);
             PutBracketsForIfStatements();
+            ReplaceElse();
             _code.Replace("func ", "void ");
             _code.Replace(":=", "=");
             ReplaceMethodHeaderForBool();
@@ -45,6 +46,13 @@ namespace GdsToJenovaCpp.Main.Builders
             return this;
         }
 
+        private void ReplaceElse()
+        {
+            var code = _code.ToString();
+            code = Regex.Replace(code, @"^(\s*)else:", "$1}\r\n$1else\r\n$1{", RegexOptions.Multiline);
+            _code = new StringBuilder(code);
+        }
+
         private void PutBracketsForIfStatements()
         {
             var lines = LoadAsCodeLineList();
@@ -56,7 +64,7 @@ namespace GdsToJenovaCpp.Main.Builders
             {
                 var input = lines[idx];
 
-                string pattern = @"^(\s*)(if|elif)\s+(.*?):";
+                string pattern = @"^(\s*)(if|elif|else)\s+(.*?):";
                 Regex regex = new Regex(pattern, RegexOptions.Multiline);
                 var leadingIntend = "";
                 if (previousIndentCount > 0 && input.Length == 0)
@@ -243,6 +251,7 @@ namespace GdsToJenovaCpp.Main.Builders
                                   !trimmedLine.EndsWith("]") &&
                                   !trimmedLine.EndsWith("[") &&
                                   !trimmedLine.EndsWith("else") &&
+                                  !trimmedLine.EndsWith("else:") &&
                                   !trimmedLine.EndsWith(",") &&
                                   !string.IsNullOrWhiteSpace(trimmedLine) &&
                                   !trimmedLine.EndsWith(Expressions.Jenova.LeftBracket) && !trimmedLine.EndsWith(Expressions.ParserInterLang.LeftCppBracketEscaped)) && !trimmedLine.EndsWith("}") &&

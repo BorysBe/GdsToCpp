@@ -54,11 +54,13 @@ var post_anim = ""
 func _ready() -> void:
 	if Ut.unkillable:
 		hp = 99999999
+
 	if Ut.maxammo:
 		var index = 0
 		for wep in weapons:
 			wep.ammo = -1
 			index += 1	
+
 	if not Ut.border_over_object:
 		$outline.material.set_shader_parameter("effect_enabled", false)
 	else:
@@ -66,6 +68,7 @@ func _ready() -> void:
 
 	if Ut.gamepad_id != 9:
 		has_joypad = true
+
 	$cgroup/dupsko.material.set_shader_parameter("is_hit",false)
 	body.material.set_shader_parameter("is_hit",false)
 	alegs.material.set_shader_parameter("is_hit",false)
@@ -74,7 +77,9 @@ func _ready() -> void:
 			weapons[wep].ammo = Ut.weapons[wep].ammo
 		if Ut.is_chechkpoint:
 			global_position = Ut.check_point_position
+
 		bunny_hopping_inc = Ut.statuses.bunny_hopping_inc
+
 	if show_states_with_animation:
 		legs.visible = true
 		$"body-hands".visible = true
