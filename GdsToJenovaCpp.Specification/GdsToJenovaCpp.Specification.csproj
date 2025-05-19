@@ -18,6 +18,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Page Include="GDScriptSamples\ifelseadvanced.gd" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\GdsToJenovaCpp.Main\GdsToJenovaCpp.Main.csproj" />
 	  <ProjectReference Include="..\GdsToJenovaCpp.RestApi\GdsToJenovaCpp.RestApi.csproj" />
 	</ItemGroup>
@@ -35,6 +39,9 @@
 	  </None>
 	  <None Update="GDScriptSamples\script.gd">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="GDScriptSamples\ifelseadvanced.gd">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
 

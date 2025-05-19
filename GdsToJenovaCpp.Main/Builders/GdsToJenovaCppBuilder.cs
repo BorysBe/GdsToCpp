@@ -49,7 +49,8 @@ namespace GdsToJenovaCpp.Main.Builders
             for (int idx = 0; idx < lines.Count; idx++)
             {
                 var input = lines[idx];
-                string pattern = @"^(\s*)(if|elif)\s+(\w+)\.(\w+)\((.*?)\):";
+
+                string pattern = @"^(\s*)(if|elif)\s+(.*?):";
                 Regex regex = new Regex(pattern, RegexOptions.Multiline);
                 var leadingIntend = "";
                 if (previousIndentCount > 0 && input.Length == 0)
@@ -75,11 +76,11 @@ namespace GdsToJenovaCpp.Main.Builders
                     string leadingIntend = match.Groups[1].Value;
                     if (match.Groups[2].Value == "if")
                     {
-                        return $"{leadingIntend}if ({match.Groups[3].Value}.{match.Groups[4].Value}({match.Groups[5].Value}))\n{leadingIntend}{{{leadingIntend}";
+                         return $"{leadingIntend}if ({match.Groups[3].Value})\n{leadingIntend}{{{leadingIntend}";
                     }
                     else if (match.Groups[2].Value == "elif")
                     {
-                        return $"{leadingIntend}}}\r\n{leadingIntend}else\r\n{leadingIntend}if ({match.Groups[3].Value}.{match.Groups[4].Value}({match.Groups[5].Value}))\n{leadingIntend}{{{leadingIntend}";
+                        return $"{leadingIntend}}}\r\n{leadingIntend}else\r\n{leadingIntend}if ({match.Groups[3].Value})\n{leadingIntend}{{{leadingIntend}";
                     }
 
                     return input;

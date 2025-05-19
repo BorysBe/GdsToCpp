@@ -92,5 +92,21 @@ namespace GdsToJenovaCpp.Specification.Controllers
             result.Should().Contain("UtilityFunctions::randf_range(-rangeX, rangeX)");
             result.Should().Contain("UtilityFunctions::randf_range(-rangeY, rangeY)");
         }
+
+        [Fact]
+        public void Should_change_gdscript_advanced_if_else()
+        {
+            // Arrange
+            var gds = File.ReadAllText(@"GDScriptSamples\ifelseadvanced.gd");
+            var builder = new GdsToJenovaCppBuilder(gds);
+
+            // Act
+            builder
+                .ReplaceMethods()
+                .AddGodotFunctionsUtilitiesHeader();
+
+            // Assert
+            var result = builder.Build();
+        }
     }
 }
